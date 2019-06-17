@@ -622,7 +622,7 @@ func NewEditMessageCaption(chatID int64, messageID int, caption string) EditMess
 			ChatID:    chatID,
 			MessageID: messageID,
 		},
-		Caption:   caption,
+		Caption: caption,
 	}
 }
 
@@ -634,6 +634,48 @@ func NewEditMessageReplyMarkup(chatID int64, messageID int, replyMarkup InlineKe
 			ChatID:      chatID,
 			MessageID:   messageID,
 			ReplyMarkup: &replyMarkup,
+		},
+	}
+}
+
+// NewEditMessageMedia allows you to edit audio, document, photo, or video messages
+// keyboard markup.
+func NewEditMessageMedia(chatID int64, messageID int, media interface{}) EditMessageMediaConfig {
+	fileName := ""
+	switch media.(type) {
+	case InputMediaPhoto:
+		photo := media.(InputMediaPhoto)
+		fileName = photo.Media
+	case InputMediaVideo:
+		video := media.(InputMediaVideo)
+		fileName = video.Media
+	}
+	return EditMessageMediaConfig{
+		BaseEdit: BaseEdit{
+			ChatID:    chatID,
+			MessageID: messageID,
+		},
+		Media: media,
+		BaseFile: BaseFile{
+			FileID:      fileName,
+			UseExisting: true,
+		},
+	}
+}
+
+// NewEditMessageMediaUpload allows you to edit audio, document, photo, or video messages
+// keyboard markup.
+func NewEditMessageMediaUpload(chatID int64, messageID int, media interface{}) EditMessageMediaConfig {
+	return EditMessageMediaConfig{
+		BaseEdit: BaseEdit{
+			ChatID:    chatID,
+			MessageID: messageID,
+		},
+		Media: media,
+		BaseFile: BaseFile{
+			BaseChat:    BaseChat{ChatID: chatID},
+			File:        media,
+			UseExisting: false,
 		},
 	}
 }

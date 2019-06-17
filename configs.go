@@ -934,6 +934,59 @@ func (config EditMessageReplyMarkupConfig) method() string {
 	return "editMessageReplyMarkup"
 }
 
+// EditMessageMediaConfig allows you to modify the media
+// of a message.
+type EditMessageMediaConfig struct {
+	BaseFile
+	BaseEdit
+	Media                 interface{} `json:"media"`
+	ParseMode             string
+	DisableWebPagePreview bool
+}
+
+func (config EditMessageMediaConfig) values() (url.Values, error) {
+	v, err := config.BaseChat.values()
+	if err != nil {
+		return v, err
+	}
+	v, err = config.BaseEdit.values()
+	if err != nil {
+		return v, err
+	}
+	if !config.UseExisting {
+		fileName := ""
+		switch mType := config.Media.(type) {
+		case InputMediaPhoto:
+			fileName = mType.Media
+			mType.Media = "attach://" + config.name()
+			config.Media = mType
+		case InputMediaVideo:
+			fileName = mType.Media
+			mType.Media = "attach://" + config.name()
+			config.Media = mType
+		}
+		config.File = fileName
+	}
+
+	bytes, err := json.Marshal(config.Media)
+	if err != nil {
+		return v, err
+	}
+	v.Add("media", string(bytes))
+	v.Add("parse_mode", config.ParseMode)
+	v.Add("disable_web_page_preview", strconv.FormatBool(config.DisableWebPagePreview))
+
+	return v, nil
+}
+
+func (config EditMessageMediaConfig) name() string {
+	return "fileName"
+}
+
+func (config EditMessageMediaConfig) method() string {
+	return "editMessageMedia"
+}
+
 // UserProfilePhotosConfig contains information about a
 // GetUserProfilePhotos request.
 type UserProfilePhotosConfig struct {
